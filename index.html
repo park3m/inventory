@@ -1,0 +1,742 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+		<meta charset="utf-8">
+		<script type="text/javascript">
+
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
+    function csvToJSON(csv_string, spliter){ 
+      // 1. 문자열을 줄바꿈으로 구분 => 배열에 저장 
+      const rows = csv_string.split("\r\n"); 
+      // 줄바꿈을 \n으로만 구분해야하는 경우, 아래 코드 사용 
+      // const rows = csv_string.split("\n");
+      // 2. 빈 배열 생성: CSV의 각 행을 담을 JSON 객체임 
+      const jsonArray = []; 
+      // 3. 제목 행 추출 후, 콤마로 구분 => 배열에 저장 
+      const header = rows[0].split(spliter); 
+      // 4. 내용 행 전체를 객체로 만들어, jsonArray에 담기 
+      for(let i = 1; i < rows.length; i++){ 
+      // 빈 객체 생성: 각 내용 행을 객체로 만들어 담아둘 객체임 
+      let obj = {}; 
+      // 각 내용 행을 콤마로 구분 
+      let row = rows[i].split(spliter); 
+      // 각 내용행을 {제목1:내용1, 제목2:내용2, ...} 형태의 객체로 생성 
+      for(let j=0; j < header.length; j++){ obj[header[j]] = row[j]; } 
+      // 각 내용 행의 객체를 jsonArray배열에 담기 
+      jsonArray.push(obj); 
+      
+      } 
+      // 5. 완성된 JSON 객체 배열 반환 
+      return jsonArray; 
+      // 문자열 형태의 JSON으로 반환할 경우, 아래 코드 사용 // return JSON.stringify(jsonArray); 
+    }
+
+	function jsonToCSV(json_data) { 
+		// 1-1. json 데이터 취득 
+		const json_array = json_data; 
+		
+		// 1-2. json데이터를 문자열(string)로 넣은 경우, JSON 배열 객체로 만들기 위해 아래 코드 사용 
+		// const json_array = JSON.parse(json_data); 
+		
+		// 2. CSV 문자열 변수 선언: json을 csv로 변환한 문자열이 담길 변수 
+		let csv_string = ''; 
+		// 3. 제목 추출: json_array의 첫번째 요소(객체)에서 제목(머릿글)으로 사용할 키값을 추출 
+		const titles = Object.keys(json_array[0]); 
+		// 4. CSV문자열에 제목 삽입: 각 제목은 컴마로 구분, 마지막 제목은 줄바꿈 추가 
+		titles.forEach((title, index)=>{ 
+			csv_string += (index !== titles.length-1 ? `${title}\t` : `${title}\r\n`); 
+		}); 
+		
+		// 5. 내용 추출: json_array의 모든 요소를 순회하며 '내용' 추출 
+		json_array.forEach((content, index)=>{ 
+			let row = ''; 
+		
+			// 각 인덱스에 해당하는 '내용'을 담을 행 
+			for(let title in content){  // for in 문은 객체의 키값만 추출하여 순회함. 
+				// 행에 '내용' 할당: 각 내용 앞에 컴마를 삽입하여 구분, 첫번째 내용은 앞에 컴마X 
+				row += (row === '' ? `${content[title]}` : `\t${content[title]}`); 
+			} 
+			
+			// CSV 문자열에 '내용' 행 삽입: 뒤에 줄바꿈(\r\n) 추가, 마지막 행은 줄바꿈X 
+			csv_string += (index !== json_array.length-1 ? `${row}\r\n`: `${row}`); 
+		}) 
+		// 6. CSV 문자열 반환: 최종 결과물(string) 
+		return csv_string; 
+	}
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
+  		
+		</script>
+
+		
+
+		<style type="text/css">
+			:root{
+				--red400: #ef5350;
+				--amber400: #ffca28;
+				--lgreen400: #9ccc65;
+				--green400: #66bb6a;
+				--blue400: #42a5f5;
+			}
+
+			body {margin: 0; padding: 0;}
+			.quiz_frame {
+				position: absolute;
+				width:100%;
+				height:100%;
+				
+			}
+
+			.prev_btn {
+				position: absolute;
+				width:15%;
+				height:40%;
+				top:30%;
+
+
+				font-size:30px;
+				
+				background-color: #ffffff; 
+				box-shadow: 0px 0px 15px #e7e7e7;
+				border-radius: 20px;
+
+				z-index: 1;
+			}
+
+			.next_btn {
+				position: relative;
+				width:15%;
+				height:40%;
+				float:right;
+				top:30%;
+
+				font-size:30px;
+				
+				background-color: #ffffff; 
+				box-shadow: 0px 0px 15px #e7e7e7;
+				border-radius: 20px;
+				z-index: 1;
+			}
+
+			.qbtn {
+				width:15%;
+				height:15%; 
+
+				color:white; 
+				font-size:70px;
+
+				box-shadow: 0px 0px 10px #e7e7e7;
+				border-radius: 10px;
+
+				cursor: pointer;
+				float:left;
+			}
+			.qbtn:active {
+				background-color: rgb(151, 151, 151);
+			}
+
+
+			.home_btn {
+				position: absolute; 
+				left:10px;
+				top:10px;
+				background-color: rgb(231, 231, 231); 
+			}
+
+			.setting_btn {
+				position: absolute; 
+				right:10px;
+				top:10px;
+				background-color: rgb(231, 231, 231); 
+			}
+
+			
+
+			.rate_0 {
+				background-color: var(--red400);
+			}
+
+			.rate_30 {
+				background-color: var(--amber400);
+			}
+
+			.rate_50 {
+				float:right;
+				background-color: var(--lgreen400);
+			}
+
+			.rate_70 {
+				float:right;
+				background-color: var(--green400);
+			}
+
+			.rate_100 {
+				float:right;
+				background-color: var(--blue400);
+			}
+
+			.hint_btn {
+				position: fixed; 
+				left:calc(15% + 20px);
+				bottom:10px;
+				background-color: rgb(231, 231, 231); 
+			}
+
+			svg{
+				position: absolute; 
+				top: 50%;
+				left:50%;
+				transform: translate(-50%, -50%); 
+			}
+			
+			
+
+
+			.center_head {
+				position: absolute; 
+				width:60%; 
+				height:15%;
+				top:calc(7.5% + 10px);
+				left:50%;
+				transform: translate(-50%, -50%); 
+				
+				background-color: #ffffff; 
+				box-shadow: 0px 0px 15px #e7e7e7;
+				border-radius: 10px;
+			}
+
+			.cb_body {height:60%;
+				position: relative; 
+				justify-content: center; 
+				flex-direction: column;
+			}
+			.cb_footer {position: relative; height:20%; }
+
+			.card_front {
+				position:absolute;
+				width:60%; 
+				height:60%;  
+
+				top:50%;
+				left:50%;
+				transform: translate(-50%, -50%); 
+
+				font-size:10vw; 
+				text-align: center; 
+				background-color: #ffffff; 
+				box-shadow: 0px 0px 15px #e7e7e7;
+				border-radius: 20px;
+			}
+			.card_back {
+				position:absolute;
+				width:60%; 
+				height:60%;  
+
+				top:50%;
+				left:50%;
+				transform: translate(-50%, -50%); 
+
+				font-size:3vw; 
+				text-align: center; 
+				background-color: #ffffff; 
+				border-radius: 20px;
+
+				visibility: hidden; 
+				z-index: 1;  
+			}
+			
+			.card_back span {
+				text-align: justify; 
+			}
+
+			.bottom_menu {
+				position:absolute;
+				width: calc(100% - 10px);
+				height: 15%;
+				padding: 5px;
+				bottom: 10px;
+			}
+			.bottom_menu .qbtn {
+				position: relative;
+				height:100%;
+				margin:5px;
+			}
+
+			input[id=rate_slider] { 
+				width:100%;
+				-webkit-appearance: none;
+				outline: none;
+				cursor: pointer; 
+
+				border-color: #000000; 
+				color: red;
+
+				background-color: #aaaaaa; 
+				border: 0.2px solid #010101; 
+				border-radius: 2.6px; 
+				box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+				
+			}
+
+			input[id=rate_slider]::-ms-fill-lower { 
+				background-color: #2a6495; 
+				border: 0.2px solid #010101; 
+				border-radius: 2.6px; 
+				box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d; 
+			}
+
+			input[id=rate_slider]::-webkit-slider-thumb{
+				-webkit-appearance: none; /*기본 스타일을 사용할지 말지 정하기 */
+				height: 30px;
+				width: 20px;
+				border-radius: 15px;
+				outline: 0;
+				border: 0;
+				background-color: red;
+			}
+
+			span{
+				position: absolute; 
+				width:90%; 
+				top:50%;
+				left:50%;
+				transform: translate(-50%, -50%); 
+				word-break:break-all; 
+				text-align: center;
+			}
+			
+
+			.cmd_btn label { 
+				display: inline-block; 
+				padding: .5em .75em; 
+				color: #FFFFFF; 
+				font-size: inherit; 
+				line-height: normal; 
+				vertical-align: middle; 
+				background-color: #4c4eb4; 
+				cursor: pointer; 
+				border: 1px solid;
+				border-radius: .25em; 
+			} 
+
+			.cmd_btn input { 
+				/* 파일 필드 숨기기 */ 
+				position: absolute; 
+				width: 1px; 
+				height: 1px; 
+				padding: 0; 
+				margin: -1px; 
+				overflow: hidden; 
+				clip:rect(0,0,0,0); 
+				border: 0; 
+			}
+
+
+
+			#setting {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(0, 0, 0, .7);
+				z-index: 1;
+				backdrop-filter: blur(4px);
+				-webkit-backdrop-filter: blur(4px);
+			}
+
+			#setting.hide {
+				display: none;
+			}
+
+			#setting.multiple-filter {
+				backdrop-filter: blur(4px) grayscale(90%);
+				-webkit-backdrop-filter: blur(4px) grayscale(90%);
+			}
+
+			#setting .content {
+				padding: 20px;
+				background: #fff;
+				border-radius: 5px;
+				box-shadow: 1px 1px 3px rgba(0, 0, 0, .3);
+			}
+			.unselectable {
+				-webkit-user-select: none;
+				-webkit-touch-callout: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
+
+		</style>
+
+	</head> 
+	<body>
+		<div class="quiz_frame">
+
+			<div class="center_head" id="center_head">
+				
+			</div>
+
+			<div class="qbtn home_btn">
+				<svg xmlns="http://www.w3.org/2000/svg" height="80%" viewBox="0 0 24 24" width="80%" fill="#AAAAAA"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 5.69l5 4.5V18h-2v-6H9v6H7v-7.81l5-4.5M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/></svg>
+			</div>
+
+			<div class="qbtn setting_btn" onclick="showSetting()">
+				<svg xmlns="http://www.w3.org/2000/svg" height="80%" viewBox="0 0 24 24" width="80%" fill="#AAAAAA"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19.43 12.98c.04-.32.07-.64.07-.98 0-.34-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.09-.16-.26-.25-.44-.25-.06 0-.12.01-.17.03l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.06-.02-.12-.03-.18-.03-.17 0-.34.09-.43.25l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.09.16.26.25.44.25.06 0 .12-.01.17-.03l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.06.02.12.03.18.03.17 0 .34-.09.43-.25l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zm-1.98-1.71c.04.31.05.52.05.73 0 .21-.02.43-.05.73l-.14 1.13.89.7 1.08.84-.7 1.21-1.27-.51-1.04-.42-.9.68c-.43.32-.84.56-1.25.73l-1.06.43-.16 1.13-.2 1.35h-1.4l-.19-1.35-.16-1.13-1.06-.43c-.43-.18-.83-.41-1.23-.71l-.91-.7-1.06.43-1.27.51-.7-1.21 1.08-.84.89-.7-.14-1.13c-.03-.31-.05-.54-.05-.74s.02-.43.05-.73l.14-1.13-.89-.7-1.08-.84.7-1.21 1.27.51 1.04.42.9-.68c.43-.32.84-.56 1.25-.73l1.06-.43.16-1.13.2-1.35h1.39l.19 1.35.16 1.13 1.06.43c.43.18.83.41 1.23.71l.91.7 1.06-.43 1.27-.51.7 1.21-1.07.85-.89.7.14 1.13zM12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+			</div>
+
+
+			<div class="prev_btn" onclick="Quiz_card_prev()">
+				<svg xmlns="http://www.w3.org/2000/svg" height="30%" viewBox="0 0 24 24" width="90%" fill="#DDDDDD"><path d="M0 0h24v24H0V0z" fill="none" opacity=".87"/><path d="M17.51 3.87L15.73 2.1 5.84 12l9.9 9.9 1.77-1.77L9.38 12l8.13-8.13z"/></svg>
+			</div>
+			<div class="next_btn" onclick="Quiz_card_next()">
+				<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="30%" viewBox="0 0 24 24" width="90%" fill="#DDDDDD"><g><path d="M0,0h24v24H0V0z" fill="none"/></g><g><polygon points="6.23,20.23 8,22 18,12 8,2 6.23,3.77 14.46,12"/></g></svg>
+			</div>
+			
+			<div class="card_back unselectable" id="card_back" onclick="Quiz_card_open()"><span>뒷면</span></div>
+			<div class="card_front unselectable" id="card_front" onclick="Quiz_card_open()"><span>앞면</span></div>
+			
+			
+			<!--<div class="qbtn hint_btn" onclick="Quiz_card_hint()">
+				<svg xmlns="http://www.w3.org/2000/svg" height="80%" viewBox="0 0 24 24" width="80%" fill="#AAAAAA"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+			</div>-->
+			
+
+			
+
+			<div class="bottom_menu">	
+				<div class="qbtn rate_0" onclick="Quiz_Rate_Write(0)">
+					<svg xmlns="http://www.w3.org/2000/svg" height="90%" viewBox="0 0 24 24" width="90%" fill="#FFFFFF"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+				</div>
+				<div class="qbtn rate_30" onclick="Quiz_Rate_Write(1)">				
+					<svg xmlns="http://www.w3.org/2000/svg" height="80%" viewBox="0 0 24 24" width="80%" fill="#FFFFFF"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 7.77L18.39 18H5.61L12 7.77M12 4L2 20h20L12 4z"/></svg>
+				</div>
+
+				<!--<div style="width:20%; height:15%; float:left;"></div>-->
+				<div class="qbtn rate_100" onclick="Quiz_Rate_Write(4)">	
+					<svg xmlns="http://www.w3.org/2000/svg" height="90%" viewBox="0 0 24 24" width="90%" fill="#FFFFFF"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z"/></svg>
+				</div>
+
+				<div class="qbtn rate_70" onclick="Quiz_Rate_Write(3)">	
+					<svg xmlns="http://www.w3.org/2000/svg" height="90%" viewBox="0 0 24 24" width="90%" fill="#FFFFFF"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+				</div>
+
+				<div class="qbtn rate_50" onclick="Quiz_Rate_Write(2)">	
+					<svg xmlns="http://www.w3.org/2000/svg" height="90%" viewBox="0 0 24 24" width="90%" fill="#FFFFFF"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+				</div>
+	
+				
+	
+				
+			</div>
+
+			<div id="setting" class="hide">
+				<div class="content">
+					<div class="cmd_btn"> 
+						<label for="quiz_data">문제 업로드</label> 
+						<input type="file" id="quiz_data" name="quiz_data" onchange="Load_data('quiz',event)" value="문제 업로드"> 
+					</div>
+					<div class="cmd_btn"> 
+						<label for="bible_data">성구 업로드</label> 
+						<input type="file" id="bible_data" name="bible_data" onchange="Load_data('bible', event)" value="성구 업로드"> 
+					</div>
+					<div class="cmd_btn"> 
+						<label for="log_delete">기록 초기화</label> 
+						<input type="button" id="log_delete" name="log_delete" onclick="Log_delete()" value="기록 초기화"> 
+					</div>
+					<button onclick="closeSetting()">닫기</button>
+				</div>
+			</div>
+
+
+			
+			
+			
+
+			
+		</div>
+
+
+		<script>
+			var current_qnum = 0;
+			var data_json;
+			var data_csv;
+			var qnum_arr;
+
+			var rate_table = {
+				"lv" :
+				[{
+					"rate" : 		0,
+					"decrease" :	0,
+					"comment" :	"모름"
+				},
+				{
+					"rate" :		30,
+					"decrease" :	10,				//10
+					"comment" :	"애매함"
+				},
+				{
+					"rate" : 		50,
+					"decrease" : 	(20/24),		//0.833
+					"comment" : 	"외움"
+				},
+				{
+					"rate" :		70,
+					"decrease" : 	(30/(24*7)),	//0.178
+					"comment" : 	"잘외움"
+				},
+				{
+					"rate" :		100,
+					"decrease" : 	(50/(24*20)), //0.104
+					"comment" : 	"완전외움"
+				}]
+			};
+
+			function Load_data(type, event){
+				var file = event.target.files[0];
+				var reader = new FileReader();
+				data_csv = "";
+				reader.onload = function () {
+					data_csv = reader.result;
+					data_json = csvToJSON(data_csv, "\t");
+					switch (type){
+						case 'quiz' :
+							localStorage.setItem("quiz_data", JSON.stringify(data_json));
+							break;
+						case 'bible' :
+							localStorage.setItem("bible_data", JSON.stringify(data_json));
+							break;
+					}   
+					alert("업로드 완료");
+				}
+				reader.readAsText(file, /* optional */ "utf-8");
+			}
+
+			function Quiz_(){
+
+			}
+			
+			function Quiz_card_shuffle(array) { 
+				for (let index = array.length - 1; index > 0; index--) {
+					// 무작위 index 값을 만든다. (0 이상의 배열 길이 값) 
+					const randomPosition = Math.floor(Math.random() * (index + 1)); 
+					// 임시로 원본 값을 저장하고, randomPosition을 사용해 배열 요소를 섞는다. 
+					const temporary = array[index]; 
+					array[index] = array[randomPosition]; 
+					array[randomPosition] = temporary; 
+				} 
+			}
+
+			function Quiz_init(){
+       			quiz_json = JSON.parse(localStorage.getItem("quiz_data"));
+				bible_json = JSON.parse(localStorage.getItem("bible_data"));
+
+				//quiz_log_json = JSON.parse(localStorage.getItem("quiz_log_data"));
+				//if(quiz_log_json == null) quiz_log_json = [];
+
+				//quiz_rate_json = JSON.parse(localStorage.getItem("quiz_rate_data"));
+				//if(quiz_rate_json == null) quiz_rate_json = new Array(quiz_json.length);
+				
+				Quiz_Rate_calc();
+				
+				qnum_arr = Quiz_Select(10);
+				Quiz_card_shuffle(qnum_arr);
+				
+				current_qnum = 0;
+
+				Quiz_refresh();
+			}
+
+			function Quiz_Select(cnt){
+				var return_arr = [];
+				var sorted_arr = quiz_json.sort(function (a, b){
+					return a.추정암기율 - b.추정암기율
+				});
+				for(var i = 0; i < cnt; i++){
+					return_arr.push(sorted_arr[i].문제번호);
+				}
+				return return_arr;
+			}
+
+			function Quiz_Rate_calc(){
+				var now = Date.now();
+				for(var i = 0; i < quiz_json.length; i++){
+					var gap = (now - quiz_json[i].시간)/1000/3600;
+					var lv = quiz_json[i].암기정도;
+					var dec = rate_table.lv[lv].decrease;
+					quiz_json[i].추정암기율 = rate_table.lv[lv].rate - (gap * dec);
+					if(quiz_json[i].추정암기율 < 0) quiz_json[i].추정암기율 = 0;
+				}
+			}
+
+			function Quiz_card_open(){
+				var card = document.getElementById("card_back");
+				if(card.style.visibility == "visible")
+				card.style.visibility = "hidden";
+				else
+					card.style.visibility = "visible";
+			}
+
+			function Bible_Search(str){
+				var book_chapter_list = [];
+				var ret = "";
+
+				if (str.indexOf(',') != -1) { //콤마있으면.. 
+					var temp = str.split(',');
+					var book_chapter = temp[0].split(':')[0];
+					book_chapter_list.push(temp[0]);
+					for (var i = 1; i < temp.length; i++) {
+						book_chapter_list.push(book_chapter + ':' + temp[i]);
+					} 
+				} else if(str.indexOf('-') != -1) { //하이픈 있으면
+					var book_chapter = str.split(':')[0];
+					var temp = str.split(':')[1].split('-');
+					for (var i = 0; i < temp[1] - temp[0] + 1; i++) {
+						book_chapter_list.push(book_chapter + ':' + (parseInt(temp[0]) + i));
+					}
+				} else { //한구절이면
+					book_chapter_list.push(str);
+				}
+				//책장절 배열이 오면 내용을 추출해서 합치기
+				for (var i = 0; i < book_chapter_list.length; i++) {
+
+					ret += (bible_json.filter(function(array){
+								return array.책장절 == book_chapter_list[i];
+							}))[0].내용;
+				}
+				return ret;
+			}
+
+
+			function Quiz_refresh(){
+				document.getElementById("card_back").style.visibility = "hidden";
+				document.getElementById("card_front").innerHTML = "<span>" + quiz_json[current_qnum].책장절 + "</span>";
+				document.getElementById("card_back").innerHTML = "<span>" + Bible_Search(quiz_json[current_qnum].책장절) + "</span>";
+				//Quiz_score_show();
+				resize_to_fit();
+			}
+
+			function Quiz_score_show(){
+				/*var log_arr = quiz_log_json.filter(function(array){
+					return array.문제번호 == quiz_json[current_qnum].문제번호;
+				});
+				var rate_100_cnt = log_arr.filter(function(array){
+					return array.암기율 == 100;
+				}).length;
+
+				var str = 
+					log_arr.length + "회 중 " + 
+					rate_100_cnt +"회 맞춤. 암기율 : " + 
+					parseInt(rate_100_cnt * 100 / log_arr.length) + "%";
+
+				document.getElementById("center_head").innerHTML = "<span>" + str + "</span>";*/
+			}
+
+			function Quiz_card_prev(){
+				if(current_qnum > 0) current_qnum -= 1; else alert("첫 퀴즈입니다");
+				Quiz_refresh();
+			}
+
+			function Quiz_card_next(){
+				if(current_qnum < quiz_json.length - 1) {
+					current_qnum += 1; 
+					Quiz_refresh();
+				} else {
+					alert("퀴즈 끝!");
+				}
+			}
+
+			function Quiz_Rate_Write(lv){
+				quiz_json[current_qnum] = {
+					문제유형: quiz_json[current_qnum].문제유형,
+					문제번호: quiz_json[current_qnum].문제번호, 
+					책장절: quiz_json[current_qnum].책장절, 
+					힌트: quiz_json[current_qnum].힌트, 
+					태그: quiz_json[current_qnum].태그, 
+					암기정도: lv, 
+					추정암기율: rate_table.lv[lv].rate,
+					시간: Date.now()
+				};
+				localStorage.setItem("quiz_data", JSON.stringify(quiz_json));
+
+				/*
+				quiz_log_json[quiz_log_json.length] = {
+					문제번호: quiz_json[current_qnum].문제번호, 
+					암기정도: lv, 
+					시간: Date.now()
+				};
+				localStorage.setItem("quiz_log_data", JSON.stringify(quiz_log_json));
+				*/
+
+				Quiz_card_next();
+			}
+
+
+			var prev_font_size;
+
+			function resize_to_fit(){
+
+				var div = document.getElementById("card_back");
+				var current_font_size = parseFloat(window.getComputedStyle(div, null).getPropertyValue('font-size'));
+				var span = div.childNodes[0];
+
+				for(var i = 0; i < 100; i++){
+					if(span.clientHeight < div.clientHeight){
+						prev_font_size = current_font_size + ((i - 1) * 5);
+						div.style.fontSize = current_font_size + (i * 5) + "px";
+					} else {
+						div.style.fontSize = ((current_font_size + (i * 5)) * 0.7) + "px";
+						break;
+					}
+					/*
+					if(span.clientHeight > prev_font_size * 1.5) {
+						div.style.fontSize = parseInt(prev_font_size) + "px";
+						break;
+					}*/
+					//var currentFont = div.style.fontSize.replace("px", "");
+				}
+			}
+
+			function showSetting(multipleFilter) {
+				const popup = document.querySelector('#setting');
+			
+				if (multipleFilter) {
+					popup.classList.add('multiple-filter');
+				} else {
+					popup.classList.remove('multiple-filter');
+				}
+				
+				popup.classList.remove('hide');
+			}
+
+			function closeSetting() {
+				const popup = document.querySelector('#setting');
+				popup.classList.add('hide');
+			}
+
+			function Log_delete() {
+				if (confirm("기록을 초기화합니다")) {
+					quiz_log_json = [];
+					localStorage.setItem("quiz_log_data", JSON.stringify(quiz_log_json));
+				} else {
+					txt = "You pressed Cancel!";
+				}
+			}
+
+			Quiz_init();
+		</script>
+	</body> 
+</html>
