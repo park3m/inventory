@@ -380,6 +380,7 @@
 				user-select: none;
 			}
 
+
 		</style>
 
 	</head> 
@@ -553,7 +554,7 @@
 				Quiz_Rate_calc();
 				
 				qnum_arr = Quiz_Select(10);
-				Quiz_card_shuffle(qnum_arr);
+				//Quiz_card_shuffle(qnum_arr);
 				
 				current_qnum = 0;
 
@@ -562,11 +563,12 @@
 
 			function Quiz_Select(cnt){
 				var return_arr = [];
-				var sorted_arr = quiz_json.sort(function (a, b){
+				sorted_arr = JSON.parse(localStorage.getItem("quiz_data"));
+				sorted_arr.sort(function (a, b){
 					return a.추정암기율 - b.추정암기율
 				});
 				for(var i = 0; i < cnt; i++){
-					return_arr.push(sorted_arr[i].문제번호);
+					return_arr.push(sorted_arr[i].문제번호 - 1);
 				}
 				return return_arr;
 			}
@@ -623,8 +625,16 @@
 
 			function Quiz_refresh(){
 				document.getElementById("card_back").style.visibility = "hidden";
-				document.getElementById("card_front").innerHTML = "<span>" + quiz_json[current_qnum].책장절 + "</span>";
-				document.getElementById("card_back").innerHTML = "<span>" + Bible_Search(quiz_json[current_qnum].책장절) + "</span>";
+
+				document.getElementById("center_head").innerHTML = 
+				"<span>" + "진행률 : " + ((current_qnum + 1) / 10) * 100 + "% &nbsp;&nbsp;&nbsp;&nbsp;" +
+					
+					"암기율 : " + parseInt(quiz_json[qnum_arr[current_qnum]].추정암기율) + "%" +
+						
+					
+					"</span>";
+				document.getElementById("card_front").innerHTML = "<span>" + quiz_json[qnum_arr[current_qnum]].책장절 + "</span>";
+				document.getElementById("card_back").innerHTML = "<span>" + Bible_Search(quiz_json[qnum_arr[current_qnum]].책장절) + "</span>";
 				//Quiz_score_show();
 				resize_to_fit();
 			}
@@ -651,7 +661,7 @@
 			}
 
 			function Quiz_card_next(){
-				if(current_qnum < quiz_json.length - 1) {
+				if(current_qnum < qnum_arr.length - 1) {
 					current_qnum += 1; 
 					Quiz_refresh();
 				} else {
@@ -660,12 +670,12 @@
 			}
 
 			function Quiz_Rate_Write(lv){
-				quiz_json[current_qnum] = {
-					문제유형: quiz_json[current_qnum].문제유형,
-					문제번호: quiz_json[current_qnum].문제번호, 
-					책장절: quiz_json[current_qnum].책장절, 
-					힌트: quiz_json[current_qnum].힌트, 
-					태그: quiz_json[current_qnum].태그, 
+				quiz_json[qnum_arr[current_qnum]] = {
+					문제유형: quiz_json[qnum_arr[current_qnum]].문제유형,
+					문제번호: quiz_json[qnum_arr[current_qnum]].문제번호, 
+					책장절: quiz_json[qnum_arr[current_qnum]].책장절, 
+					힌트: quiz_json[qnum_arr[current_qnum]].힌트, 
+					태그: quiz_json[qnum_arr[current_qnum]].태그, 
 					암기정도: lv, 
 					추정암기율: rate_table.lv[lv].rate,
 					시간: Date.now()
